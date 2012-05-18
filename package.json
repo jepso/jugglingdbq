@@ -1,0 +1,8 @@
+{
+    "name":"jugglingdbq",
+    "version":"0.0.1-beta",
+    "dependencies":{
+        "jugglingdb":"0.1.9",
+        "q":"0.8.x"
+    }
+}
