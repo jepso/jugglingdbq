@@ -35,4 +35,7 @@ store.user.create({id:'forbes'}).then(function(forbes){
     }).then(function(cred){
         return cred.user();
     });
+}).then(function(user){
+    console.log(user);
+    return user.credentials.find('forbesc')//store.credential.all().invoke('map',function(v){return v.userId;})
 }).then(console.log).end();

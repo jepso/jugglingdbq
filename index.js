@@ -12,15 +12,13 @@ function promisify(model){
 
     model.prototype.save = maybeAsync(model.prototype.save, 'save');
     //isValid
-    //destroy
     model.prototype.destroy = maybeAsync(model.prototype.destroy, 'destroy');
-    //updateAttribute
-    //updateAttributes
-    //reload
-
+    model.prototype.updateAttribute = maybeAsync(model.prototype.updateAttribute, 'updateAttribute');
+    model.prototype.updateAttributes = maybeAsync(model.prototype.updateAttributes, 'updateAttributes');
+    model.prototype.reload = maybeAsync(model.prototype.reload, 'reload');
 
     var oldBelongsTo = model.belongsTo;
-    model.belongsTo = function(name, params){
+    model.belongsTo = function(other, params){
         oldBelongsTo.apply(this, arguments);
         var oldGetOwner = model.prototype[params.as];
         model.prototype[params.as] = function(value){
@@ -28,7 +26,32 @@ function promisify(model){
             else return maybeAsync(oldGetOwner, this, params.as)();
         }
     };
-
+    var oldHasMany = model.hasMany;
+    model.hasMany = function(other, params){
+        oldHasMany.apply(this, arguments);
+        var name = params.as;
+        var oldProp = Object.getOwnPropertyDescriptor(model.prototype,name);
+        Object.defineProperty(model.prototype, name, {
+            enumerable: false,
+            configurable: true,
+            get: function () {
+                var old = oldProp.get.call(this);
+                var neu = maybeAsync(old, name);
+                asyncs.forEach(function(key){
+                    if(typeof old[key] === 'function'){
+                        neu[key] = maybeAsync(old[key], name + "." +key);
+                    }
+                });
+                var syncs = ['build'];
+                syncs.forEach(function(key){
+                    if(typeof old[key] === 'function' && typeof neu[key] === 'undefined'){
+                        neu[key] = old[key].bind(old);
+                    }
+                });
+                return neu;
+            }
+        });
+    };
 
 
     return model;

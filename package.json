@@ -1,6 +1,6 @@
 {
     "name":"jugglingdbq",
-    "version":"0.0.1-beta",
+    "version":"0.0.1-beta1",
     "dependencies":{
         "jugglingdb":"0.1.9",
         "q":"0.8.x"
